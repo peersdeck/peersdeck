@@ -49,3 +49,18 @@
 .project-detail-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .field-hint{font-size:9px;color:#89948b;font-weight:400}
 @media(max-width:600px){.directory-search{align-items:flex-start;flex-direction:column;gap:5px}.directory-search input{width:100%}.project-detail-cover{margin-top:20px}}
+
+/* Live database content on the landing page */
+.category-list a{display:flex;align-items:center;justify-content:space-between;gap:12px;color:inherit;text-decoration:none}
+.category-list a:hover{color:#78964e}
+.homepage-featured{padding-top:55px;padding-bottom:65px}
+.homepage-project-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.homepage-project-card{display:block;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:inherit;transition:transform .2s ease,box-shadow .2s ease}
+.homepage-project-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px #1c322012}
+.homepage-project-image{height:150px;background:linear-gradient(135deg,#e2ecd8,#b9cda9);background-position:center;background-size:cover;padding:13px}
+.homepage-project-image span{display:inline-block;background:#ffffffdf;color:#506644;border-radius:20px;padding:6px 9px;font-size:8px;font-weight:700}
+.homepage-project-card>div:last-child{padding:16px}
+.homepage-project-card h3{font:700 16px 'Plus Jakarta Sans',sans-serif;margin:0 0 7px}
+.homepage-project-card p{font-size:10px;line-height:1.65;color:var(--muted);margin:0 0 12px}
+.homepage-project-card small{font-size:9px;color:#789064}
+@media(max-width:700px){.homepage-project-grid{grid-template-columns:1fr}.homepage-project-image{height:185px}.homepage-featured .section-heading{align-items:flex-start;flex-direction:column}}
