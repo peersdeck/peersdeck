@@ -3,6 +3,7 @@ services:
     name: peersdeck
     runtime: node
     plan: free
+    region: frankfurt
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /
@@ -11,5 +12,5 @@ services:
         value: 22
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
-      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+      - key: NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
         sync: false
