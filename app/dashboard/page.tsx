@@ -28,7 +28,7 @@ async function reviewProject(formData:FormData){
  "use server";
  const id=String(formData.get("project_id")||"");
  const decision=String(formData.get("decision")||"");
- if(!id||!["published","rejected"].includes(decision))throw new Error("Invalid review action.");
+ if(!id||!["published","rejected","suspended"].includes(decision))throw new Error("Invalid review action.");
  const {supabase,userId}=await requireAdmin();
  const {error}=await supabase.from("projects").update({
   status:decision, reviewed_at:new Date().toISOString(), reviewed_by:userId,
@@ -37,6 +37,16 @@ async function reviewProject(formData:FormData){
   updated_at:new Date().toISOString()
  }).eq("id",id);
  if(error)throw new Error("Project review could not be saved: "+error.message);
+ revalidatePath("/dashboard");revalidatePath("/discover");revalidatePath("/projects/"+id);
+}
+
+
+async function deleteProject(formData:FormData){
+ "use server";
+ const id=String(formData.get("project_id")||"");if(!id)throw new Error("Project ID is required.");
+ const {supabase}=await requireAdmin();
+ const {error}=await supabase.from("projects").delete().eq("id",id);
+ if(error)throw new Error("Project could not be deleted: "+error.message);
  revalidatePath("/dashboard");revalidatePath("/discover");revalidatePath("/projects/"+id);
 }
 
@@ -114,7 +124,8 @@ export default async function DashboardPage(){
  <div className="admin-progress"><span style={{width:progress+"%"}}/></div><div className="admin-progress-label">{goal>0?progress.toFixed(1)+"% of target recorded":"Funding target not entered"}{p.funding_deadline?" · Deadline "+p.funding_deadline:" · No deadline"}</div>
  <form className="admin-raised-form" action={saveRaisedAmount}><input type="hidden" name="project_id" value={p.id}/><label>Verified amount raised ({p.currency||"USD"})<input name="amount_raised" type="number" min="0" step="0.01" defaultValue={raised}/></label><button className="button button-small secondary-action" type="submit">Save amount</button></form>
  {p.status==="submitted"&&<form className="admin-review-form" action={reviewProject}><input type="hidden" name="project_id" value={p.id}/><label>Review note (optional)<input name="review_note" placeholder="Feedback for the founder"/></label><div><button className="button button-small publish-action" name="decision" value="published">Approve & publish</button><button className="button button-small admin-delete" name="decision" value="rejected">Reject</button></div></form>}
- {p.status==="published"&&<form className="admin-review-form" action={reviewProject}><input type="hidden" name="project_id" value={p.id}/><label>Publication note (optional)<input name="review_note" placeholder="Reason for unpublishing"/></label><button className="button button-small secondary-action" name="decision" value="rejected">Unpublish / reject</button></form>}
+ {(p.status==="published"||p.status==="suspended")&&<form className="admin-review-form" action={reviewProject}><input type="hidden" name="project_id" value={p.id}/><label>Admin note (optional)<input name="review_note" placeholder="Reason for status change"/></label><button className="button button-small secondary-action" name="decision" value={p.status==="published"?"suspended":"published"}>{p.status==="published"?"Suspend project":"Restore & publish"}</button></form>}
+ <form action={deleteProject} onSubmit={undefined as never}><input type="hidden" name="project_id" value={p.id}/><button className="button button-small admin-delete" type="submit">Delete project permanently</button></form>
  <div className="admin-project-links"><Link href={"/projects/"+p.id}>View project ↗</Link><Link href={"/dashboard/projects/"+p.id}>Open editor ↗</Link></div>
  </article>})}</div>}</section>
  <section className="admin-demo-panel"><div className="eyebrow">SUPER ADMIN / DEMO CONTENT</div><h2>Illustrative projects</h2><p>Sample projects are not real founders or fundraising campaigns. Delete them when genuine founder projects replace the examples.</p>{!demos.length?<p>There are no demo projects remaining.</p>:<div className="admin-demo-list">{demos.map(d=><article className="admin-demo-row" key={d.id}><div><b>{d.name}</b><span>{d.founder_name} · {d.location} · {d.category}</span><small>{d.is_active?"Visible in Discover":"Inactive"}</small></div><form action={deleteDemo}><input type="hidden" name="demo_id" value={d.id}/><button className="button button-small admin-delete" type="submit">Delete demo</button></form></article>)}</div>}</section></>}
