@@ -30,7 +30,7 @@ export default function EditProjectPage(){
    setMessage(status==="published"?"Your published project changes have been saved.":status==="submitted"?"Your project has been submitted for Super Admin approval.":"Your project draft has been saved.");router.refresh();
   }catch(e){setMessage(e instanceof Error?e.message:"Unable to save project.");}finally{setBusy(false);}
  }
- async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();await persist(project?.status==="published"?"published":"draft");}
+ async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();await persist(project?.status==="published"?"published":project?.status==="submitted"?"submitted":"draft");}
  return <main className="shell dashboard-page"><nav className="nav"><Link className="brand" href="/"><span className="brand-mark">P</span> peers<span>deck</span></Link><Link className="logout-button" href="/dashboard/projects">Back to projects</Link></nav>
  <section className="project-form-wrap"><div className="eyebrow">FOUNDER WORKSPACE / PROJECT EDITOR</div><h1>Shape your<br/><em>project story.</em></h1>
  {loading?<p>Loading project…</p>:!project?<div className="form-message" role="alert">{message}</div>:<form className="project-form" onSubmit={submit}>
