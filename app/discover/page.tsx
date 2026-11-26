@@ -26,8 +26,11 @@ const demoActivity = [
 ];
 
 type LiveProject = { id:string; name:string; summary:string; category:string; country_code:string|null; stage:string };
-\nexport default function DiscoverPage() {
-  const [projects, setProjects] = useState(starterProjects);\n  const [liveProjects, setLiveProjects] = useState<LiveProject[]>([]);\n  useEffect(() => { const supabase = createClient(); supabase.from("projects").select("id,name,summary,category,country_code,stage").eq("status","published").order("published_at",{ascending:false}).then(({data}) => setLiveProjects((data || []) as LiveProject[])); }, []);
+
+export default function DiscoverPage() {
+  const [projects, setProjects] = useState(starterProjects);
+  const [liveProjects, setLiveProjects] = useState<LiveProject[]>([]);
+  useEffect(() => { const supabase = createClient(); supabase.from("projects").select("id,name,summary,category,country_code,stage").eq("status","published").order("published_at",{ascending:false}).then(({data}) => setLiveProjects((data || []) as LiveProject[])); }, []);
   const [active, setActive] = useState("All ideas");
   const [demoVisible, setDemoVisible] = useState(true);
   const visibleProjects = useMemo(() => projects.filter((project) => active === "All ideas" || project.category === active), [projects, active]);
