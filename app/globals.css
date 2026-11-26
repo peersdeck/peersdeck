@@ -92,3 +92,6 @@
 .founder-public-projects h2{margin:13px 0 25px}
 .founder-public-projects h2 em{font-style:normal;color:#78964e}
 @media(max-width:650px){.dashboard-metrics{grid-template-columns:1fr 1fr}.dashboard-metrics>div:last-child{grid-column:1/-1}.project-row{align-items:flex-start;flex-direction:column}.project-row-actions{justify-content:flex-start}.founder-public-hero{padding-top:48px}}
+
+.project-form input[type="file"]{padding:10px;background:#f5f7f1;border:1px dashed #cbd8c0;cursor:pointer}
+.project-form input[type="file"]::file-selector-button{border:0;border-radius:5px;background:#e5eddc;color:#3f5d35;padding:8px 11px;margin-right:10px;font:700 10px 'DM Sans',sans-serif;cursor:pointer}
