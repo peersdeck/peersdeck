@@ -117,3 +117,56 @@
 .admin-demo-row span,.admin-demo-row small{font-size:.84rem;color:#68776c}
 .admin-delete{background:#fff!important;color:#a33333!important;border:1px solid #e5bcbc!important}
 @media(max-width:640px){.admin-demo-panel{padding:18px}.admin-demo-row{align-items:flex-start;flex-direction:column}.admin-demo-row form{width:100%}.admin-demo-row form button{width:100%}}
+
+
+/* Super Admin funding and approval control centre */
+.admin-analytics,.admin-project-panel{margin:32px 0;padding:25px;border:1px solid #dce7dc;border-radius:18px;background:#fff}
+.admin-analytics-heading,.admin-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:20px}
+.admin-analytics-heading h2,.admin-section-heading h2{font:800 25px 'Plus Jakarta Sans',sans-serif;color:#193d29;margin:7px 0}
+.admin-analytics-heading p,.admin-section-heading p{font-size:11px;color:#718075;margin:0;line-height:1.6}
+.admin-live-tag{padding:7px 10px;border-radius:20px;background:#e8f3e8;color:#2e6a42;font-size:8px;font-weight:800;letter-spacing:.8px;white-space:nowrap}
+.admin-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}
+.admin-stat-grid article{display:grid;gap:5px;padding:16px;border:1px solid #e6ede5;border-radius:12px;background:#f9fbf8}
+.admin-stat-grid b{font:800 25px 'Plus Jakarta Sans',sans-serif;color:#254d33}
+.admin-stat-grid span{font-size:9px;color:#78857a}
+.admin-currency-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.admin-currency-grid article{display:grid;gap:13px;padding:16px;border:1px solid #e4ebe2;border-radius:12px;background:#fbfcfa}
+.admin-currency-grid article>span{font-size:9px;color:#72816f;font-weight:800;letter-spacing:.8px}
+.admin-currency-grid article>div{display:grid;gap:4px}
+.admin-currency-grid small,.admin-project-finance small{font-size:8px;color:#89968b;letter-spacing:.6px;font-weight:700}
+.admin-currency-grid b{font:800 21px 'Plus Jakarta Sans',sans-serif;color:#245333}
+.admin-currency-grid strong{font:700 13px 'Plus Jakarta Sans',sans-serif;color:#425b48}
+.admin-section-heading>span{font-size:9px;color:#718075;white-space:nowrap;padding-top:8px}
+.admin-project-list{display:grid;gap:14px}
+.admin-project-card{padding:19px;border:1px solid #e2eae1;border-radius:14px;background:#fcfdfb}
+.admin-project-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.admin-project-top h3{font:800 17px 'Plus Jakarta Sans',sans-serif;color:#203d2b;margin:7px 0 4px}
+.admin-project-top p{font-size:10px;color:#78857b;margin:0}
+.admin-project-category{font-size:8px;letter-spacing:.8px;text-transform:uppercase;color:#7b8e70;font-weight:800}
+.admin-project-status{flex:none;padding:6px 9px;border-radius:20px;background:#edf1ed;color:#66746a;font-size:8px;font-weight:800;text-transform:uppercase}
+.admin-project-status.status-published{background:#e5f2e7;color:#28663d}
+.admin-project-status.status-submitted{background:#fff2d8;color:#87621e}
+.admin-project-status.status-rejected{background:#f8e9e7;color:#9b4039}
+.admin-project-finance{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:17px 0 10px}
+.admin-project-finance>div{display:grid;gap:5px}
+.admin-project-finance b{font:700 13px 'Plus Jakarta Sans',sans-serif;color:#304a37;overflow-wrap:anywhere}
+.admin-progress{height:6px;border-radius:10px;background:#e9eee7;overflow:hidden}
+.admin-progress span{display:block;height:100%;background:linear-gradient(90deg,#6c9657,#a6c77d);border-radius:10px}
+.admin-progress-label{font-size:8px;color:#859087;margin-top:6px}
+.admin-raised-form,.admin-review-form{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:15px;padding-top:14px;border-top:1px solid #e9eee8}
+.admin-raised-form label,.admin-review-form label{display:grid;gap:6px;flex:1;min-width:180px;font-size:9px;color:#6f7c71;font-weight:700}
+.admin-raised-form input,.admin-review-form input{width:100%;padding:10px 11px;border:1px solid #dce5da;border-radius:7px;background:#fff;font:11px 'DM Sans',sans-serif;color:#293b2d}
+.admin-review-form>div{display:flex;gap:8px;flex-wrap:wrap}
+.admin-project-links{display:flex;gap:16px;margin-top:14px}
+.admin-project-links a{font-size:9px;color:#58794a;font-weight:700;text-decoration:none}
+.admin-empty{padding:30px;text-align:center;color:#78857b;font-size:12px}
+@media(max-width:700px){
+ .admin-analytics,.admin-project-panel{padding:17px;margin:22px 0}
+ .admin-stat-grid{grid-template-columns:repeat(2,1fr)}
+ .admin-project-finance{grid-template-columns:repeat(2,1fr);row-gap:14px}
+ .admin-project-top{flex-direction:column}
+ .admin-analytics-heading,.admin-section-heading{align-items:flex-start}
+ .admin-review-form{align-items:stretch;flex-direction:column}
+ .admin-review-form>div{width:100%}
+ .admin-review-form button{flex:1}
+}
