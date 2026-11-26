@@ -64,3 +64,31 @@
 .homepage-project-card p{font-size:10px;line-height:1.65;color:var(--muted);margin:0 0 12px}
 .homepage-project-card small{font-size:9px;color:#789064}
 @media(max-width:700px){.homepage-project-grid{grid-template-columns:1fr}.homepage-project-image{height:185px}.homepage-featured .section-heading{align-items:flex-start;flex-direction:column}}
+
+
+/* Founder profile and publishing workspace */
+.dashboard-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 28px}
+.dashboard-metrics>div{display:grid;gap:5px;padding:18px 20px;background:#fff;border:1px solid var(--line);border-radius:9px}
+.dashboard-metrics b{font:800 23px 'Plus Jakarta Sans',sans-serif;color:var(--green)}
+.dashboard-metrics span{font-size:10px;color:var(--muted)}
+.dashboard-grid article .button{margin-top:12px;padding:12px 14px;font-size:11px}
+.project-row-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.project-row-actions .button{padding:10px 12px}
+.project-row-actions>b{font-size:9px;color:#607b43;background:#edf3e4;padding:7px 10px;border-radius:20px;text-transform:capitalize}
+.project-row-actions>.status-published{background:#e4f2e5;color:#28643c}
+.project-row-actions>.status-draft{background:#f0f1ec;color:#68756d}
+.project-row-actions>.status-submitted{background:#fff3d8;color:#87621e}
+.publish-action{background:#557b3e;margin-top:4px}
+.publish-action:hover{background:#3f6530}
+.secondary-action{background:#fff;color:#526057;border:1px solid #dfe5db;margin-top:4px}
+.secondary-action:hover{background:#f1f4ed;color:var(--green)}
+.founder-public-hero{padding:75px 0 55px;max-width:760px}
+.founder-public-avatar{width:90px;height:90px;border-radius:50%;overflow:hidden;background:#e7efdc;display:grid;place-items:center;margin-bottom:26px;color:#5d7a43;font:800 32px 'Plus Jakarta Sans',sans-serif}
+.founder-public-avatar img{width:100%;height:100%;object-fit:cover}
+.founder-public-hero h1{font:800 clamp(42px,6vw,64px)/1.05 'Plus Jakarta Sans',sans-serif;letter-spacing:-3px;margin:15px 0}
+.founder-public-hero h2{font:600 17px 'Plus Jakarta Sans',sans-serif;color:#6c805b;margin:0 0 17px}
+.founder-public-hero>p{max-width:650px;color:var(--muted);font-size:14px;line-height:1.85;white-space:pre-wrap}
+.founder-public-projects{padding-top:30px}
+.founder-public-projects h2{margin:13px 0 25px}
+.founder-public-projects h2 em{font-style:normal;color:#78964e}
+@media(max-width:650px){.dashboard-metrics{grid-template-columns:1fr 1fr}.dashboard-metrics>div:last-child{grid-column:1/-1}.project-row{align-items:flex-start;flex-direction:column}.project-row-actions{justify-content:flex-start}.founder-public-hero{padding-top:48px}}
