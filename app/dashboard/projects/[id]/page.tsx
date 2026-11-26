@@ -11,7 +11,7 @@ type Project={id:string;name:string;summary:string;category:string;country_code:
 export default function EditProjectPage(){
  const {id}=useParams<{id:string}>();const router=useRouter();
  const [project,setProject]=useState<Project|null>(null);const [form,setForm]=useState({name:"",summary:"",category:"Technology",country_code:"KE",location:"",stage:"idea",cover_image_url:"",problem:"",solution:"",business_model:"",website_url:""});
- const [message,setMessage]=useState("");const [busy,setBusy]=useState(false);const [loading,setLoading]=useState(true);
+ const [message,setMessage]=useState("");const [coverFile,setCoverFile]=useState<File|null>(null);const [busy,setBusy]=useState(false);const [loading,setLoading]=useState(true);
  useEffect(()=>{(async()=>{const supabase=createClient();const {data:{user}}=await supabase.auth.getUser();if(!user){router.replace("/login");return;}
  const {data,error}=await supabase.from("projects").select("id,name,summary,category,country_code,location,stage,cover_image_url,problem,solution,business_model,website_url,status").eq("id",id).eq("owner_id",user.id).maybeSingle();
  if(error||!data){setMessage("Project not found or you do not have permission to edit it.");setLoading(false);return;}
@@ -22,7 +22,9 @@ export default function EditProjectPage(){
   setBusy(true);setMessage("");
   try{const supabase=createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error("Please sign in again.");
    for(const value of [form.cover_image_url,form.website_url])if(value){const u=new URL(value);if(!["https:","http:"].includes(u.protocol))throw new Error("Please use a valid HTTP or HTTPS link.");}
-   const update={name:form.name.trim(),summary:form.summary.trim(),category:form.category,country_code:form.country_code.trim().toUpperCase()||null,location:form.location.trim(),stage:form.stage,cover_image_url:form.cover_image_url.trim()||null,problem:form.problem.trim(),solution:form.solution.trim(),business_model:form.business_model.trim(),website_url:form.website_url.trim()||null,status,published_at:status==="published"?(project?.status==="published"?undefined:new Date().toISOString()):null,updated_at:new Date().toISOString()};
+   let coverImageUrl=form.cover_image_url.trim()||null;
+   if(coverFile){if(!coverFile.type.startsWith("image/")||coverFile.size>5*1024*1024)throw new Error("Choose an image under 5 MB.");const ext=coverFile.name.split(".").pop()?.toLowerCase()||"jpg";const path=user.id+"/project-"+id+"-"+Date.now()+"."+ext;const {error:uploadError}=await supabase.storage.from("profile-media").upload(path,coverFile,{upsert:true,contentType:coverFile.type});if(uploadError)throw uploadError;coverImageUrl=supabase.storage.from("profile-media").getPublicUrl(path).data.publicUrl;}
+   const update={name:form.name.trim(),summary:form.summary.trim(),category:form.category,country_code:form.country_code.trim().toUpperCase()||null,location:form.location.trim(),stage:form.stage,cover_image_url:coverImageUrl,problem:form.problem.trim(),solution:form.solution.trim(),business_model:form.business_model.trim(),website_url:form.website_url.trim()||null,status,published_at:status==="published"?(project?.status==="published"?undefined:new Date().toISOString()):null,updated_at:new Date().toISOString()};
    const {error}=await supabase.from("projects").update(update).eq("id",id).eq("owner_id",user.id);if(error)throw error;
    setProject(old=>old?{...old,...update,published_at:status==="published"?(old.status==="published"?(old as any).published_at:new Date().toISOString()):null}:old);
    setMessage(status==="published"?"Your project is now published in Discover.":"Your project draft has been saved.");router.refresh();
@@ -36,7 +38,7 @@ export default function EditProjectPage(){
  <label>Short description<textarea required maxLength={2000} rows={4} value={form.summary} onChange={e=>change("summary",e.target.value)}/></label>
  <div className="project-form-row"><label>Industry<select value={form.category} onChange={e=>change("category",e.target.value)}>{categories.map(x=><option key={x}>{x}</option>)}</select></label><label>Country code<input maxLength={2} pattern="[A-Za-z]{2}" value={form.country_code} onChange={e=>change("country_code",e.target.value.toUpperCase())}/></label></div>
  <label>Location<input maxLength={120} value={form.location} onChange={e=>change("location",e.target.value)}/></label>
- <label>Project cover image URL<input type="url" value={form.cover_image_url} onChange={e=>change("cover_image_url",e.target.value)} placeholder="https://…"/></label>
+ <label>Upload project cover image<input type="file" accept="image/png,image/jpeg,image/webp,image/avif" onChange={e=>setCoverFile(e.target.files?.[0]||null)}/><span className="field-hint">Optional · JPG, PNG, WebP or AVIF · maximum 5 MB</span></label><label>Or use a project cover image URL<input type="url" value={form.cover_image_url} onChange={e=>change("cover_image_url",e.target.value)} placeholder="https://…"/></label>
  <label>Current stage<select value={form.stage} onChange={e=>change("stage",e.target.value)}><option value="idea">Idea</option><option value="prototype">Prototype</option><option value="early_revenue">Early revenue</option><option value="growth">Growth</option></select></label>
  <label>The problem<textarea rows={3} maxLength={3000} value={form.problem} onChange={e=>change("problem",e.target.value)} placeholder="What challenge are you addressing?"/></label>
  <label>Your solution<textarea rows={3} maxLength={3000} value={form.solution} onChange={e=>change("solution",e.target.value)} placeholder="How does your project solve it?"/></label>
