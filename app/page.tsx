@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
 const highlights = [
   { number: "01", title: "Share your idea", copy: "Turn your vision into a clear, structured project profile that people can understand and support." },
@@ -6,9 +7,28 @@ const highlights = [
   { number: "03", title: "Find the right opportunity", copy: "Explore projects, discover emerging businesses and follow their progress." },
 ];
 
-const categories = ["Agriculture", "Technology", "Manufacturing", "Healthcare", "Logistics", "Renewable energy", "Education", "Creative industries"];
+function safeImage(value: string | null) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const [projectsResult, demoResult] = await Promise.all([
+    supabase.from("projects").select("id,name,summary,category,country_code,location,cover_image_url").eq("status", "published").eq("is_demo", false).order("published_at", { ascending: false }).limit(3),
+    supabase.from("demo_projects").select("category").eq("is_active", true),
+  ]);
+  const featuredProjects = projectsResult.data || [];
+  const categories = Array.from(new Set([
+    ...(projectsResult.data || []).map((project) => project.category),
+    ...(demoResult.data || []).map((project) => project.category),
+  ].filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
   return (
     <main>
       <nav className="nav shell">
@@ -42,7 +62,9 @@ export default function Home() {
         <div className="feature-grid">{highlights.map((item) => <article className="feature" key={item.number}><span className="feature-number">{item.number}</span><div className="feature-arrow">↗</div><h3>{item.title}</h3><p>{item.copy}</p></article>)}</div>
       </section>
 
-      <section className="category-section"><div className="shell category-inner"><div><div className="eyebrow">ACROSS INDUSTRIES</div><h2>Where ideas<br /><em>meet possibility.</em></h2></div><div className="category-list">{categories.map((category) => <span key={category}>{category}<b>↗</b></span>)}</div></div></section>
+      <section className="category-section"><div className="shell category-inner"><div><div className="eyebrow">ACROSS INDUSTRIES · {categories.length} CATEGORIES</div><h2>Where ideas<br /><em>meet possibility.</em></h2></div><div className="category-list">{categories.length ? categories.map((category) => <Link href="/discover" key={category}>{category}<b>↗</b></Link>) : <span>Categories will appear as projects are added.</span>}</div></div></section>
+
+      {featuredProjects.length > 0 && <section className="section shell homepage-featured"><div className="section-heading"><div><div className="eyebrow">LATEST FOUNDER PROJECTS</div><h2>Fresh ideas,<br /><em>from the community.</em></h2></div><Link className="text-link" href="/discover">Explore all projects →</Link></div><div className="homepage-project-grid">{featuredProjects.map((project) => { const image = safeImage(project.cover_image_url); return <Link className="homepage-project-card" href={`/projects/${project.id}`} key={project.id}><div className="homepage-project-image" style={image ? { backgroundImage: `linear-gradient(180deg,#17251b08,#17251b22),url("${image}")` } : undefined}><span>{project.category}</span></div><div><h3>{project.name}</h3><p>{project.summary}</p><small>{project.location || project.country_code || "Global"} · View project ↗</small></div></Link>; })}</div></section>}
 
       <section className="public-discover shell" aria-labelledby="public-discover-title">
         <div className="public-discover-copy"><div className="eyebrow">OPEN TO EVERYONE · NO SIGN-IN REQUIRED</div><h2 id="public-discover-title">Find a project<br /><em>worth believing in.</em></h2><p>Browse founder stories, explore business ideas and discover emerging projects across industries. Visitors can look around freely before deciding to join PeersDeck.</p><Link className="button" href="/discover">Discover projects <span>↗</span></Link></div>
