@@ -36,3 +36,16 @@
 .discover-bottom-cta{margin:0 0 55px;padding:32px;border:1px solid #e4eade;border-radius:14px;background:linear-gradient(115deg,#f0f5e9,#fafbf8);display:flex;align-items:center;justify-content:space-between;gap:20px}.discover-bottom-cta h2{font:800 26px/1.18 'Plus Jakarta Sans',sans-serif;letter-spacing:-1px;margin:10px 0 0}.discover-bottom-cta h2 em{font-style:normal;color:#78964e}
 @media(max-width:900px){.demo-project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.discover-intro{padding-top:53px}.discover-intro h1{font-size:54px;letter-spacing:-3.5px}.discover-stats{gap:12px 19px}.demo-control{align-items:flex-start;flex-direction:column}.demo-control>div{grid-template-columns:1fr}.demo-control p{grid-column:1}.filter-row{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;margin-right:-18px;padding-right:18px}.filter-row::-webkit-scrollbar{display:none}.demo-project-grid{grid-template-columns:1fr;gap:15px}.project-art{height:205px!important}.demo-project-body>p{min-height:0}.discover-bottom-cta{align-items:flex-start;flex-direction:column;padding:24px}.discover-bottom-cta h2{font-size:23px}.activity-heading h2{font-size:27px}}
+
+/* Data-driven directory controls */
+.directory-search{display:flex;align-items:center;gap:14px;margin:18px 0 4px;padding:10px 14px;background:#fff;border:1px solid #e4eade;border-radius:9px}
+.directory-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:12px 'DM Sans',sans-serif;color:var(--ink);padding:5px}
+.directory-search>span{font-size:9px;color:#879188;white-space:nowrap}
+.directory-loading,.directory-error{text-align:center;padding:35px 15px;color:var(--muted);font-size:12px}
+.directory-error{color:#9b5145}
+.demo-project-section{padding:38px 0 50px;border-top:1px solid var(--line)}
+.demo-project-section .activity-heading{margin-bottom:22px}
+.project-detail-cover{height:min(42vw,390px);min-height:190px;overflow:hidden;border-radius:12px;margin:35px 0 0;background:#edf3e7}
+.project-detail-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.field-hint{font-size:9px;color:#89948b;font-weight:400}
+@media(max-width:600px){.directory-search{align-items:flex-start;flex-direction:column;gap:5px}.directory-search input{width:100%}.project-detail-cover{margin-top:20px}}
