@@ -18,6 +18,11 @@ const starterProjects: DemoProject[] = [
 ];
 
 const categories = ["All ideas", "Agriculture", "Technology", "Manufacturing", "Healthcare", "Logistics", "Renewable energy", "Education", "Creative industries"];
+const demoActivity = [
+  { initials: "AN", name: "Amina Njeri", action: "shared a new idea", detail: "FarmLink Africa · Agriculture", time: "DEMO · 2 hours ago" },
+  { initials: "BO", name: "Brian Otieno", action: "updated a project milestone", detail: "Mwangaza Solar · Renewable energy", time: "DEMO · 5 hours ago" },
+  { initials: "WM", name: "Wanjiku Muthoni", action: "joined the founder community", detail: "Creative industries · Nairobi", time: "DEMO · Yesterday" },
+];
 
 export default function DiscoverPage() {
   const [projects, setProjects] = useState(starterProjects);
@@ -46,7 +51,7 @@ export default function DiscoverPage() {
       <div className="eyebrow">THE IDEAS DIRECTORY · BUILT IN AFRICA, OPEN TO THE WORLD</div>
       <h1>Discover what<br /><em>could be next.</em></h1>
       <p>Meet the founders, explore emerging ideas and discover the people building tomorrow. Every great enterprise starts somewhere.</p>
-      <div className="discover-stats"><span><b>{projects.length}</b> sample projects</span><span><b>6</b> industries represented</span><span><b>East Africa</b> demo region</span></div>
+      <div className="discover-stats"><span><b>{projects.length}</b> sample projects</span><span><b>{demoVisible ? 3 : 0}</b> sample updates</span><span><b>East Africa</b> demo region</span></div>
     </div>
 
     <section className="demo-control" aria-label="Demonstration content controls">
@@ -68,6 +73,7 @@ export default function DiscoverPage() {
       </article>)}
     </section> : <div className="empty-state demo-empty"><div className="empty-symbol">✳</div><h2>{demoVisible ? "No projects in this category yet." : "Demo content has been removed."}</h2><p>{demoVisible ? "Try another industry, or come back as founders publish their ideas." : "The sample profiles and projects have been cleared from this preview. Real founder submissions will appear here after review."}</p>{!demoVisible && <button className="button" onClick={restoreDemo}>Restore demo preview ↻</button>}</div>}
 
+    {demoVisible && <section className="demo-activity"><div className="activity-heading"><div><div className="eyebrow">COMMUNITY PULSE · DEMO</div><h2>A little activity goes<br /><em>a long way.</em></h2></div><p>Example updates showing how founder activity may appear as the PeersDeck community grows. These are fictional demonstrations.</p></div><div className="activity-list">{demoActivity.map((item) => <article className="activity-item" key={item.initials}><span className="founder-avatar">{item.initials}</span><div><p><b>{item.name}</b> {item.action}</p><small>{item.detail}</small></div><span className="activity-time">{item.time}</span></article>)}</div></section>}
     <section className="discover-bottom-cta"><div><div className="eyebrow">YOUR IDEA BELONGS HERE</div><h2>Ready to put your idea<br /><em>in front of the world?</em></h2></div><Link className="button" href="/signup">Create your founder profile <span>↗</span></Link></section>
     <footer className="footer inner-footer"><Link className="brand" href="/"><span className="brand-mark">P</span> peers<span>deck</span></Link><span>© {new Date().getFullYear()} PeersDeck</span></footer>
   </main>;
