@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const categories = ["Agriculture", "Technology", "Manufacturing", "Healthcare", "Logistics", "Renewable energy", "Education", "Retail", "Creative industries", "Other"];
