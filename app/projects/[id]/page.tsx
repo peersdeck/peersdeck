@@ -1,12 +1,37 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-type Props={params:Promise<{id:string}>};
-export default async function ProjectDetailPage({params}:Props){
- const {id}=await params; if(id.startsWith("demo-")) notFound();
- const supabase=await createClient();
- const {data:project,error}=await supabase.from("projects").select("id,name,summary,problem,solution,business_model,category,country_code,stage,website_url,published_at,owner_id").eq("id",id).eq("status","published").maybeSingle();
- if(error||!project)notFound();
- const {data:founder}=await supabase.from("profiles").select("full_name,username,bio,headline,avatar_url").eq("id",project.owner_id).maybeSingle();
- return <main className="shell inner-page"><nav className="nav inner-nav"><Link className="brand" href="/"><span className="brand-mark">P</span> peers<span>deck</span></Link><div className="nav-actions"><Link className="login-link" href="/discover">Discover</Link><Link className="button button-small" href="/signup">Join PeersDeck ↗</Link></div></nav><section className="project-detail-hero"><div className="eyebrow">PUBLIC PROJECT · {project.category.toUpperCase()}</div><h1>{project.name}</h1><p>{project.summary}</p><div className="project-meta"><span>{project.country_code||"Global"}</span><span>{project.stage.replaceAll("_"," ")}</span><span>Published {new Date(project.published_at||new Date()).toLocaleDateString()}</span></div></section><div className="project-detail-layout"><article className="project-story">{project.problem&&<section><div className="eyebrow">THE PROBLEM</div><h2>What needs to change?</h2><p>{project.problem}</p></section>}{project.solution&&<section><div className="eyebrow">THE SOLUTION</div><h2>A different way forward.</h2><p>{project.solution}</p></section>}{project.business_model&&<section><div className="eyebrow">BUSINESS MODEL</div><h2>Building for sustainability.</h2><p>{project.business_model}</p></section>}</article><aside className="founder-panel"><div className="eyebrow">THE FOUNDER</div><h2>{founder?.full_name||"PeersDeck founder"}</h2>{founder?.headline&&<p>{founder.headline}</p>}{founder?.bio&&<p>{founder.bio}</p>}{project.website_url&&<a className="button" href={project.website_url} target="_blank" rel="noreferrer">Visit project website ↗</a>}<p className="safety-note">Founder-submitted information. PeersDeck has not independently verified these claims. This profile is not an offer to invest or a guarantee of results.</p><Link className="text-link" href="/signup">Join PeersDeck to connect with founders →</Link></aside></div><footer className="footer inner-footer"><Link className="brand" href="/"><span className="brand-mark">P</span> peers<span>deck</span></Link><Link href="/discover">Back to discovery</Link></footer></main>;
+
+type Props = { params: Promise<{ id: string }> };
+
+function validImage(value: string | null) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function ProjectDetailPage({ params }: Props) {
+  const { id } = await params;
+  if (id.startsWith("demo-")) notFound();
+  const supabase = await createClient();
+  const { data: project, error } = await supabase.from("projects")
+    .select("id,name,summary,problem,solution,business_model,category,country_code,location,stage,website_url,cover_image_url,published_at,owner_id")
+    .eq("id", id).eq("status", "published").eq("is_demo", false).maybeSingle();
+  if (error || !project) notFound();
+  const { data: founder } = await supabase.from("profiles")
+    .select("full_name,username,bio,headline,avatar_url")
+    .eq("id", project.owner_id).maybeSingle();
+  const coverImage = validImage(project.cover_image_url);
+
+  return <main className="shell inner-page">
+    <nav className="nav inner-nav"><Link className="brand" href="/"><span className="brand-mark">P</span> peers<span>deck</span></Link><div className="nav-actions"><Link className="login-link" href="/discover">Discover</Link><Link className="button button-small" href="/signup">Join PeersDeck ↗</Link></div></nav>
+    {coverImage && <div className="project-detail-cover"><img src={coverImage} alt={`${project.name} project cover`} /></div>}
+    <section className="project-detail-hero"><div className="eyebrow">PUBLIC PROJECT · {project.category.toUpperCase()}</div><h1>{project.name}</h1><p>{project.summary}</p><div className="project-meta"><span>{project.location || project.country_code || "Global"}</span><span>{project.stage.replaceAll("_", " ")}</span><span>Published {new Date(project.published_at || new Date()).toLocaleDateString()}</span></div></section>
+    <div className="project-detail-layout"><article className="project-story">{project.problem && <section><div className="eyebrow">THE PROBLEM</div><h2>What needs to change?</h2><p>{project.problem}</p></section>}{project.solution && <section><div className="eyebrow">THE SOLUTION</div><h2>A different way forward.</h2><p>{project.solution}</p></section>}{project.business_model && <section><div className="eyebrow">BUSINESS MODEL</div><h2>Building for sustainability.</h2><p>{project.business_model}</p></section>}</article><aside className="founder-panel"><div className="eyebrow">THE FOUNDER</div><h2>{founder?.full_name || "PeersDeck founder"}</h2>{founder?.headline && <p>{founder.headline}</p>}{founder?.bio && <p>{founder.bio}</p>}{project.website_url && <a className="button" href={project.website_url} target="_blank" rel="noreferrer">Visit project website ↗</a>}<p className="safety-note">Founder-submitted information. PeersDeck has not independently verified these claims. This profile is not an offer to invest or a guarantee of results.</p><Link className="text-link" href="/signup">Join PeersDeck to connect with founders →</Link></aside></div>
+    <footer className="footer inner-footer"><Link className="brand" href="/"><span className="brand-mark">P</span> peers<span>deck</span></Link><Link href="/discover">Back to discovery</Link></footer>
+  </main>;
 }
