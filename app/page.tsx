@@ -13,7 +13,7 @@ export default function Home() {
     <main>
       <nav className="nav shell">
         <Link className="brand" href="/"><span className="brand-mark">P</span> peers<span>deck</span></Link>
-        <div className="nav-links"><Link href="/discover">Discover</Link><a href="#how-it-works">How it works</a><a href="#about">About</a></div>
+        <div className="nav-links"><Link className="nav-discover" href="/discover">Discover projects <span>↗</span></Link><a href="#how-it-works">How it works</a><a href="#about">About</a></div>
         <div className="nav-actions"><Link className="login-link" href="/login">Log in</Link><Link className="button button-small" href="/signup">Join PeersDeck <span>↗</span></Link></div>
       </nav>
 
@@ -22,7 +22,7 @@ export default function Home() {
           <div className="eyebrow"><span className="pulse" /> BUILT IN AFRICA. OPEN TO THE WORLD.</div>
           <h1>Big ideas can<br /><em>start anywhere.</em></h1>
           <p className="hero-lede">A place for founders to share what they are building, connect with people who believe in it, and discover pathways to grow.</p>
-          <div className="hero-actions"><Link className="button" href="/signup">Bring your idea to life <span>↗</span></Link><Link className="text-link" href="/discover">Explore ideas <span>→</span></Link></div>
+          <div className="hero-actions"><Link className="button" href="/signup">Bring your idea to life <span>↗</span></Link><Link className="text-link" href="/discover">Browse projects — no account needed <span>→</span></Link></div>
           <div className="hero-note"><span className="note-icon">✳</span><span>From an idea to an opportunity.<br />From an opportunity to an enterprise.</span></div>
         </div>
         <div className="hero-art" aria-label="Illustration representing ideas connecting into opportunities">
@@ -43,6 +43,11 @@ export default function Home() {
       </section>
 
       <section className="category-section"><div className="shell category-inner"><div><div className="eyebrow">ACROSS INDUSTRIES</div><h2>Where ideas<br /><em>meet possibility.</em></h2></div><div className="category-list">{categories.map((category) => <span key={category}>{category}<b>↗</b></span>)}</div></div></section>
+
+      <section className="public-discover shell" aria-labelledby="public-discover-title">
+        <div className="public-discover-copy"><div className="eyebrow">OPEN TO EVERYONE · NO SIGN-IN REQUIRED</div><h2 id="public-discover-title">Find a project<br /><em>worth believing in.</em></h2><p>Browse founder stories, explore business ideas and discover emerging projects across industries. Visitors can look around freely before deciding to join PeersDeck.</p><Link className="button" href="/discover">Discover projects <span>↗</span></Link></div>
+        <div className="public-discover-visual"><div className="discover-visual-orbit"></div><div className="discover-visual-card visual-one"><span>01 / AGRICULTURE</span><b>Ideas that grow</b><small>Explore founder-led ventures</small></div><div className="discover-visual-card visual-two"><span>02 / CLEAN ENERGY</span><b>Powering possibility</b><small>Discover new approaches</small></div><div className="discover-visual-card visual-three"><span>03 / LOGISTICS</span><b>Connecting markets</b><small>See what's being built</small></div><div className="discover-visual-center">P</div></div>
+      </section>
 
       <section className="cta shell" id="about"><div className="cta-panel"><div className="eyebrow">YOUR NEXT CHAPTER STARTS HERE</div><h2>Every enterprise<br />begins with an idea.</h2><p>Give yours a place to grow.</p><Link className="button button-light" href="/signup">Get started with PeersDeck <span>↗</span></Link><div className="cta-watermark">P</div></div></section>
 
