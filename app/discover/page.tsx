@@ -48,6 +48,21 @@ function initials(value: string) {
 
 const fallbackTones = ["sage", "sun", "blue", "rose", "violet", "mint"];
 
+// Local JPEG campaign artwork is the default for the six illustrative projects.
+// Uploaded founder cover_image_url values continue to take precedence.
+const demoImageByName: Record<string, string> = {
+  "farmlink africa": "/images/projects/farmlink.jpg",
+  "mwangaza solar": "/images/projects/mwangaza.jpg",
+  afyalink: "/images/projects/afyalink.jpg",
+  "crafted collective": "/images/projects/crafted.jpg",
+  routewise: "/images/projects/routewise.jpg",
+  skillspring: "/images/projects/skillspring.jpg",
+};
+
+function demoCoverImage(project: DemoProject) {
+  return safeImageUrl(project.cover_image_url) || demoImageByName[project.name.trim().toLowerCase()];
+}
+
 export default function DiscoverPage() {
   const [demoProjects, setDemoProjects] = useState<DemoProject[]>([]);
   const [liveProjects, setLiveProjects] = useState<LiveProject[]>([]);
