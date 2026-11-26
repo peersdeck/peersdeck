@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type DemoProject = {
   id: string; name: string; founder: string; location: string; category: string;
@@ -24,8 +25,9 @@ const demoActivity = [
   { initials: "WM", name: "Wanjiku Muthoni", action: "joined the founder community", detail: "Creative industries · Nairobi", time: "DEMO · Yesterday" },
 ];
 
-export default function DiscoverPage() {
-  const [projects, setProjects] = useState(starterProjects);
+type LiveProject = { id:string; name:string; summary:string; category:string; country_code:string|null; stage:string };
+\nexport default function DiscoverPage() {
+  const [projects, setProjects] = useState(starterProjects);\n  const [liveProjects, setLiveProjects] = useState<LiveProject[]>([]);\n  useEffect(() => { const supabase = createClient(); supabase.from("projects").select("id,name,summary,category,country_code,stage").eq("status","published").order("published_at",{ascending:false}).then(({data}) => setLiveProjects((data || []) as LiveProject[])); }, []);
   const [active, setActive] = useState("All ideas");
   const [demoVisible, setDemoVisible] = useState(true);
   const visibleProjects = useMemo(() => projects.filter((project) => active === "All ideas" || project.category === active), [projects, active]);
@@ -73,6 +75,7 @@ export default function DiscoverPage() {
       </article>)}
     </section> : <div className="empty-state demo-empty"><div className="empty-symbol">✳</div><h2>{demoVisible ? "No projects in this category yet." : "Demo content has been removed."}</h2><p>{demoVisible ? "Try another industry, or come back as founders publish their ideas." : "The sample profiles and projects have been cleared from this preview. Real founder submissions will appear here after review."}</p>{!demoVisible && <button className="button" onClick={restoreDemo}>Restore demo preview ↻</button>}</div>}
 
+    {liveProjects.length > 0 && <section className="live-project-section"><div className="activity-heading"><div><div className="eyebrow">FOUNDER PROJECTS</div><h2>Projects being<br /><em>built right now.</em></h2></div><p>Public projects shared by PeersDeck members. Details are provided by their founders.</p></div><div className="demo-project-grid">{liveProjects.map(project => <article className="demo-project-card live-project-card" key={project.id}><div className="project-art sage"><span className="demo-pill">FOUNDER PUBLISHED</span><span className="project-art-mark">P</span><span className="project-category">{project.category}</span></div><div className="demo-project-body"><h2>{project.name}</h2><p>{project.summary}</p><div className="funding-numbers"><span>{project.country_code || "Global"}</span><span>{project.stage.replaceAll("_"," ")}</span></div><Link className="project-explore" href={"/projects/"+project.id}>View project <span>↗</span></Link></div></article>)}</div></section>}
     {demoVisible && <section className="demo-activity"><div className="activity-heading"><div><div className="eyebrow">COMMUNITY PULSE · DEMO</div><h2>A little activity goes<br /><em>a long way.</em></h2></div><p>Example updates showing how founder activity may appear as the PeersDeck community grows. These are fictional demonstrations.</p></div><div className="activity-list">{demoActivity.map((item) => <article className="activity-item" key={item.initials}><span className="founder-avatar">{item.initials}</span><div><p><b>{item.name}</b> {item.action}</p><small>{item.detail}</small></div><span className="activity-time">{item.time}</span></article>)}</div></section>}
     <section className="discover-bottom-cta"><div><div className="eyebrow">YOUR IDEA BELONGS HERE</div><h2>Ready to put your idea<br /><em>in front of the world?</em></h2></div><Link className="button" href="/signup">Create your founder profile <span>↗</span></Link></section>
     <footer className="footer inner-footer"><Link className="brand" href="/"><span className="brand-mark">P</span> peers<span>deck</span></Link><span>© {new Date().getFullYear()} PeersDeck</span></footer>
