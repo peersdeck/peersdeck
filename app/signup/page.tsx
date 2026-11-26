@@ -23,7 +23,7 @@ export default function SignupPage() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName }, emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: { data: { full_name: fullName }, emailRedirectTo: "https://peersdeck.onrender.com/auth/callback" },
       });
       if (error) throw error;
       if (data.session) {
