@@ -63,7 +63,7 @@ export default function DiscoverPage() {
       setLoadError("");
       const [demoResult, liveResult] = await Promise.all([
         supabase.from("demo_projects").select("id,name,founder_name,location,category,description,cover_image_url,currency").eq("is_active", true).order("display_order", { ascending: true }),
-        supabase.from("projects").select("id,name,summary,category,country_code,location,stage,funding_goal,currency,cover_image_url,owner_id").eq("status", "published").eq("is_demo", false).order("published_at", { ascending: false }),
+        supabase.from("projects").select("id,name,summary,category,country_code,location,stage,funding_goal,amount_raised,funding_deadline,currency,cover_image_url,owner_id").eq("status", "published").eq("is_demo", false).order("published_at", { ascending: false }),
       ]);
       if (!mounted) return;
       const ownerIds = Array.from(new Set((liveResult.data || []).map((project) => project.owner_id)));
@@ -154,7 +154,7 @@ export default function DiscoverPage() {
             {!image && <><span className="placeholder-orb placeholder-orb-one" /><span className="placeholder-orb placeholder-orb-two" /><span className="project-art-mark">{initials(project.name)}</span><span className="placeholder-caption">FOUNDER COVER IMAGE</span></>}
             <span className="project-category">{project.category}</span>
           </div>
-          <div className="demo-project-body"><div className="project-founder"><span className="founder-avatar">{initials(founder)}</span><span><b>{founder}</b><small>{project.location || project.country_code || "Location not provided"}</small></span><span className="founder-label">FOUNDER</span></div><h2>{project.name}</h2><p>{project.summary}</p><div className="funding-numbers"><span>{project.funding_goal != null ? `${project.currency || "USD"} ${Number(project.funding_goal).toLocaleString()}` : "Funding target not stated"}</span><span>{project.stage.replaceAll("_", " ")}</span></div><Link className="project-explore" href={`/projects/${project.id}`}>View project <span>↗</span></Link></div>
+          <div className="demo-project-body"><div className="project-founder"><span className="founder-avatar">{initials(founder)}</span><span><b>{founder}</b><small>{project.location || project.country_code || "Location not provided"}</small></span><span className="founder-label">FOUNDER</span></div><h2>{project.name}</h2><p>{project.summary}</p><div className="funding-numbers"><span>Raised: {project.currency || "USD"} {Number(project.amount_raised || 0).toLocaleString()}</span><span>Target: {project.funding_goal != null ? `${project.currency || "USD"} ${Number(project.funding_goal).toLocaleString()}` : "Not stated"}</span></div><div className="funding-numbers"><span>Balance: {project.funding_goal != null ? `${project.currency || "USD"} ${Math.max(0,Number(project.funding_goal)-Number(project.amount_raised||0)).toLocaleString()}` : "—"}</span><span>{project.funding_deadline ? (Math.ceil((new Date(project.funding_deadline+"T23:59:59Z").getTime()-Date.now())/86400000)<0 ? "Deadline passed" : Math.ceil((new Date(project.funding_deadline+"T23:59:59Z").getTime()-Date.now())/86400000)+" days left") : project.stage.replaceAll("_", " ")}</span></div><Link className="project-explore" href={`/projects/${project.id}`}>View project <span>↗</span></Link></div>
         </article>;
       })}</div></section>}
 
