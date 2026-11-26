@@ -95,3 +95,11 @@
 
 .project-form input[type="file"]{padding:10px;background:#f5f7f1;border:1px dashed #cbd8c0;cursor:pointer}
 .project-form input[type="file"]::file-selector-button{border:0;border-radius:5px;background:#e5eddc;color:#3f5d35;padding:8px 11px;margin-right:10px;font:700 10px 'DM Sans',sans-serif;cursor:pointer}
+
+
+/* Project application supporting-document controls */
+.document-upload-group{border:1px solid var(--line,#dce5dc);border-radius:18px;padding:20px;margin:8px 0 4px;background:rgba(35,92,58,.035)}
+.document-upload-group h2{font-size:1.12rem;margin:0 0 6px;color:var(--ink,#173b27)}
+.document-upload-group>p{font-size:.9rem;line-height:1.55;color:var(--muted,#66756a);margin:0 0 16px}
+.document-upload-group label{margin-top:14px}
+.document-upload-group input[type=file]{display:block;width:100%;margin-top:8px;padding:12px;border:1px dashed #9bb5a0;border-radius:12px;background:#fff}
