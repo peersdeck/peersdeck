@@ -5,45 +5,100 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type DemoProject = {
-  id: string; name: string; founder: string; location: string; category: string;
-  description: string; ask: string; raised: string; progress: number; initials: string; tone: string;
+  id: string;
+  name: string;
+  founder_name: string;
+  location: string;
+  category: string;
+  description: string;
+  cover_image_url: string | null;
+  currency: string;
 };
 
-const starterProjects: DemoProject[] = [
-  { id: "demo-1", name: "FarmLink Africa", founder: "Amina Njeri", location: "Nakuru, Kenya", category: "Agriculture", description: "Connecting smallholder farmers to reliable buyers, practical market information and better routes to market.", ask: "KES 2.4M", raised: "KES 1.1M", progress: 46, initials: "FA", tone: "sage" },
-  { id: "demo-2", name: "Mwangaza Solar", founder: "Brian Otieno", location: "Kisumu, Kenya", category: "Renewable energy", description: "Making dependable solar power more accessible to small businesses and neighbourhood enterprises.", ask: "KES 4.0M", raised: "KES 2.6M", progress: 65, initials: "MS", tone: "sun" },
-  { id: "demo-3", name: "AfyaLink", founder: "Grace Achieng", location: "Kampala, Uganda", category: "Healthcare", description: "A digital-first care coordination concept designed to help families find nearby health services.", ask: "USD 35K", raised: "USD 12K", progress: 34, initials: "AL", tone: "blue" },
-  { id: "demo-4", name: "Crafted Collective", founder: "Wanjiku Muthoni", location: "Nairobi, Kenya", category: "Creative industries", description: "Helping independent makers bring locally designed products to wider regional and international markets.", ask: "KES 1.8M", raised: "KES 900K", progress: 50, initials: "CC", tone: "rose" },
-  { id: "demo-5", name: "RouteWise", founder: "Samuel Kato", location: "Kigali, Rwanda", category: "Logistics", description: "Exploring smarter delivery coordination for growing businesses moving goods across East Africa.", ask: "USD 50K", raised: "USD 18K", progress: 36, initials: "RW", tone: "violet" },
-  { id: "demo-6", name: "SkillSpring", founder: "Nadia Hassan", location: "Mombasa, Kenya", category: "Education", description: "A practical skills platform concept connecting young talent with mentors and work-ready learning.", ask: "KES 3.2M", raised: "KES 2.0M", progress: 62, initials: "SS", tone: "mint" },
-];
+type LiveProject = {
+  id: string;
+  name: string;
+  summary: string;
+  category: string;
+  country_code: string | null;
+  location: string | null;
+  stage: string;
+  cover_image_url: string | null;
+  profiles?: { full_name?: string | null; avatar_url?: string | null; headline?: string | null } | null;
+};
 
-const categories = ["All ideas", "Agriculture", "Technology", "Manufacturing", "Healthcare", "Logistics", "Renewable energy", "Education", "Creative industries"];
-const demoActivity = [
-  { initials: "AN", name: "Amina Njeri", action: "shared a new idea", detail: "FarmLink Africa · Agriculture", time: "DEMO · 2 hours ago" },
-  { initials: "BO", name: "Brian Otieno", action: "updated a project milestone", detail: "Mwangaza Solar · Renewable energy", time: "DEMO · 5 hours ago" },
-  { initials: "WM", name: "Wanjiku Muthoni", action: "joined the founder community", detail: "Creative industries · Nairobi", time: "DEMO · Yesterday" },
-];
+function safeImageUrl(value: string | null | undefined) {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
-type LiveProject = { id:string; name:string; summary:string; category:string; country_code:string|null; stage:string };
+function initials(value: string) {
+  return value.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+}
+
+const fallbackTones = ["sage", "sun", "blue", "rose", "violet", "mint"];
 
 export default function DiscoverPage() {
-  const [projects, setProjects] = useState(starterProjects);
+  const [demoProjects, setDemoProjects] = useState<DemoProject[]>([]);
   const [liveProjects, setLiveProjects] = useState<LiveProject[]>([]);
-  useEffect(() => { const supabase = createClient(); supabase.from("projects").select("id,name,summary,category,country_code,stage").eq("status","published").order("published_at",{ascending:false}).then(({data}) => setLiveProjects((data || []) as LiveProject[])); }, []);
-  const [active, setActive] = useState("All ideas");
-  const [demoVisible, setDemoVisible] = useState(true);
-  const visibleProjects = useMemo(() => projects.filter((project) => active === "All ideas" || project.category === active), [projects, active]);
+  const [activeCategory, setActiveCategory] = useState("All ideas");
+  const [search, setSearch] = useState("");
+  const [showDemo, setShowDemo] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
-  function clearDemo() {
-    setProjects([]);
-    setDemoVisible(false);
-  }
+  useEffect(() => {
+    let mounted = true;
+    const supabase = createClient();
+    async function loadDirectory() {
+      setLoading(true);
+      setLoadError("");
+      const [demoResult, liveResult] = await Promise.all([
+        supabase.from("demo_projects").select("id,name,founder_name,location,category,description,cover_image_url,currency").eq("is_active", true).order("display_order", { ascending: true }),
+        supabase.from("projects").select("id,name,summary,category,country_code,location,stage,cover_image_url,profiles!projects_owner_id_fkey(full_name,avatar_url,headline)").eq("status", "published").eq("is_demo", false).order("published_at", { ascending: false }),
+      ]);
+      if (!mounted) return;
+      if (demoResult.error || liveResult.error) {
+        setLoadError("Some project information could not be loaded. Please refresh the page.");
+      }
+      setDemoProjects((demoResult.data || []) as DemoProject[]);
+      setLiveProjects((liveResult.data || []) as unknown as LiveProject[]);
+      setLoading(false);
+    }
+    void loadDirectory();
+    return () => { mounted = false; };
+  }, []);
 
-  function restoreDemo() {
-    setProjects(starterProjects);
-    setDemoVisible(true);
-  }
+  const categories = useMemo(() => {
+    const all = [...(showDemo ? demoProjects : []), ...liveProjects];
+    return ["All ideas", ...Array.from(new Set(all.map((project) => project.category).filter(Boolean))).sort((a, b) => a.localeCompare(b))];
+  }, [demoProjects, liveProjects, showDemo]);
+
+  const filteredDemo = useMemo(() => demoProjects.filter((project) => {
+    const categoryMatch = activeCategory === "All ideas" || project.category === activeCategory;
+    const term = search.trim().toLowerCase();
+    const searchMatch = !term || [project.name, project.founder_name, project.location, project.category, project.description].join(" ").toLowerCase().includes(term);
+    return showDemo && categoryMatch && searchMatch;
+  }), [demoProjects, activeCategory, search, showDemo]);
+
+  const filteredLive = useMemo(() => liveProjects.filter((project) => {
+    const categoryMatch = activeCategory === "All ideas" || project.category === activeCategory;
+    const term = search.trim().toLowerCase();
+    const founder = project.profiles?.full_name || "";
+    const searchMatch = !term || [project.name, founder, project.location || "", project.country_code || "", project.category, project.summary].join(" ").toLowerCase().includes(term);
+    return categoryMatch && searchMatch;
+  }), [liveProjects, activeCategory, search]);
+
+  useEffect(() => {
+    if (activeCategory !== "All ideas" && !categories.includes(activeCategory)) setActiveCategory("All ideas");
+  }, [categories, activeCategory]);
+
+  const totalCount = filteredDemo.length + filteredLive.length;
 
   return <main className="shell inner-page">
     <nav className="nav inner-nav">
@@ -55,31 +110,56 @@ export default function DiscoverPage() {
     <div className="page-intro discover-intro">
       <div className="eyebrow">THE IDEAS DIRECTORY · BUILT IN AFRICA, OPEN TO THE WORLD</div>
       <h1>Discover what<br /><em>could be next.</em></h1>
-      <p>Meet the founders, explore emerging ideas and discover the people building tomorrow. Every great enterprise starts somewhere.</p>
-      <div className="discover-stats"><span><b>{projects.length}</b> sample projects</span><span><b>{demoVisible ? 3 : 0}</b> sample updates</span><span><b>East Africa</b> demo region</span></div>
+      <p>Explore founder-published projects, meet the people behind them and discover ideas from around the world.</p>
+      <div className="discover-stats">
+        <span><b>{loading ? "—" : liveProjects.length}</b> published projects</span>
+        <span><b>{loading ? "—" : (showDemo ? demoProjects.length : 0)}</b> illustrative demos</span>
+        <span><b>{loading ? "—" : categories.length - 1}</b> industries</span>
+      </div>
     </div>
 
-    <section className="demo-control" aria-label="Demonstration content controls">
-      <div><span className="demo-pill">DEMO CONTENT</span><strong>Preview an active PeersDeck community</strong><p>These fictional profiles and projects are for product demonstration only. No real money has been raised.</p></div>
-      {demoVisible ? <button className="demo-clear" onClick={clearDemo}>Remove demo data ×</button> : <button className="demo-restore" onClick={restoreDemo}>Restore demo data ↻</button>}
+    <section className="demo-control" aria-label="Directory information">
+      <div><span className="demo-pill">LIVE DIRECTORY</span><strong>Projects update from the PeersDeck database</strong><p>Founder-published projects are shown separately from fictional examples. Sample projects are illustrative only and do not represent real founders, fundraising or transactions.</p></div>
+      <button className={showDemo ? "demo-clear" : "demo-restore"} onClick={() => setShowDemo((value) => !value)}>{showDemo ? "Hide demo examples ×" : "Show demo examples ↻"}</button>
     </section>
 
-    <div className="filter-row">{categories.map((category) => <button type="button" onClick={() => setActive(category)} className={active === category ? "filter active" : "filter"} key={category}>{category}</button>)}</div>
+    <div className="directory-search">
+      <input aria-label="Search projects" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search projects, founders, industries or locations..." />
+      <span>{loading ? "Loading…" : `${totalCount} results`}</span>
+    </div>
 
-    {visibleProjects.length > 0 ? <section className="demo-project-grid" aria-label="Demonstration projects">
-      {visibleProjects.map((project) => <article className="demo-project-card" key={project.id}>
-        <div className={`project-art project-placeholder ${project.tone}`} role="img" aria-label={`Illustrative ${project.category} project cover placeholder`}><span className="placeholder-topline"><span className="demo-pill">DEMO PREVIEW</span><span className="placeholder-image-icon">✳</span></span><span className="placeholder-orb placeholder-orb-one"/><span className="placeholder-orb placeholder-orb-two"/><span className="project-art-mark">{project.initials}</span><span className="project-category">{project.category}</span><span className="placeholder-caption">PROJECT IMAGE PLACEHOLDER</span></div>
-        <div className="demo-project-body">
-          <div className="project-founder"><span className="founder-avatar">{project.founder.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span><span><b>{project.founder}</b><small>{project.location}</small></span><span className="founder-label">FOUNDER</span></div>
-          <div className="project-title-row"><h2>{project.name}</h2><span className="project-verified-placeholder">✳</span></div><p>{project.description}</p>
-          <div className="demo-funding"><div><small>Illustrative progress</small><b>{project.progress}%</b></div><div className="progress-track"><span style={{ width: `${project.progress}%` }} /></div><div className="funding-numbers"><span>{project.raised} <small>sample</small></span><span>Goal {project.ask}</span></div></div>
-          <Link className="project-explore" href="/signup">Explore founder opportunities <span>↗</span></Link>
-        </div>
-      </article>)}
-    </section> : <div className="empty-state demo-empty"><div className="empty-symbol">✳</div><h2>{demoVisible ? "No projects in this category yet." : "Demo content has been removed."}</h2><p>{demoVisible ? "Try another industry, or come back as founders publish their ideas." : "The sample profiles and projects have been cleared from this preview. Real founder submissions will appear here after review."}</p>{!demoVisible && <button className="button" onClick={restoreDemo}>Restore demo preview ↻</button>}</div>}
+    <div className="filter-row">{categories.map((category) => <button type="button" onClick={() => setActiveCategory(category)} className={activeCategory === category ? "filter active" : "filter"} key={category}>{category}</button>)}</div>
 
-    {liveProjects.length > 0 && <section className="live-project-section"><div className="activity-heading"><div><div className="eyebrow">FOUNDER PROJECTS</div><h2>Projects being<br /><em>built right now.</em></h2></div><p>Public projects shared by PeersDeck members. Details are provided by their founders.</p></div><div className="demo-project-grid">{liveProjects.map(project => <article className="demo-project-card live-project-card" key={project.id}><div className="project-art project-placeholder sage" role="img" aria-label="Founder project cover placeholder"><span className="placeholder-topline"><span className="demo-pill">FOUNDER PUBLISHED</span><span className="placeholder-image-icon">✳</span></span><span className="placeholder-orb placeholder-orb-one"/><span className="placeholder-orb placeholder-orb-two"/><span className="project-art-mark">P</span><span className="project-category">{project.category}</span><span className="placeholder-caption">ADD PROJECT COVER IMAGE</span></div><div className="demo-project-body"><h2>{project.name}</h2><p>{project.summary}</p><div className="funding-numbers"><span>{project.country_code || "Global"}</span><span>{project.stage.replaceAll("_"," ")}</span></div><Link className="project-explore" href={"/projects/"+project.id}>View project <span>↗</span></Link></div></article>)}</div></section>}
-    {demoVisible && <section className="demo-activity"><div className="activity-heading"><div><div className="eyebrow">COMMUNITY PULSE · DEMO</div><h2>A little activity goes<br /><em>a long way.</em></h2></div><p>Example updates showing how founder activity may appear as the PeersDeck community grows. These are fictional demonstrations.</p></div><div className="activity-list">{demoActivity.map((item) => <article className="activity-item" key={item.initials}><span className="founder-avatar">{item.initials}</span><div><p><b>{item.name}</b> {item.action}</p><small>{item.detail}</small></div><span className="activity-time">{item.time}</span></article>)}</div></section>}
+    {loadError && <p className="directory-error" role="status">{loadError}</p>}
+    {loading ? <div className="directory-loading">Loading projects from PeersDeck…</div> : <>
+      {filteredLive.length > 0 && <section className="live-project-section"><div className="activity-heading"><div><div className="eyebrow">FOUNDER PROJECTS</div><h2>Projects being<br /><em>built right now.</em></h2></div><p>Projects published by PeersDeck members. Details are provided by their founders.</p></div><div className="demo-project-grid">{filteredLive.map((project) => {
+        const image = safeImageUrl(project.cover_image_url);
+        const founder = project.profiles?.full_name || "PeersDeck founder";
+        return <article className="demo-project-card live-project-card" key={project.id}>
+          <div className={`project-art project-placeholder ${fallbackTones[0]}`} style={image ? { backgroundImage: `linear-gradient(180deg, #17251b22, #17251b66), url("${image}")`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
+            <span className="placeholder-topline"><span className="demo-pill">FOUNDER PUBLISHED</span><span className="placeholder-image-icon">✳</span></span>
+            {!image && <><span className="placeholder-orb placeholder-orb-one" /><span className="placeholder-orb placeholder-orb-two" /><span className="project-art-mark">{initials(project.name)}</span><span className="placeholder-caption">FOUNDER COVER IMAGE</span></>}
+            <span className="project-category">{project.category}</span>
+          </div>
+          <div className="demo-project-body"><div className="project-founder"><span className="founder-avatar">{initials(founder)}</span><span><b>{founder}</b><small>{project.location || project.country_code || "Location not provided"}</small></span><span className="founder-label">FOUNDER</span></div><h2>{project.name}</h2><p>{project.summary}</p><div className="funding-numbers"><span>{project.country_code || "Global"}</span><span>{project.stage.replaceAll("_", " ")}</span></div><Link className="project-explore" href={`/projects/${project.id}`}>View project <span>↗</span></Link></div>
+        </article>;
+      })}</div></section>}
+
+      {showDemo && filteredDemo.length > 0 && <section className="demo-project-section"><div className="activity-heading"><div><div className="eyebrow">ILLUSTRATIVE EXAMPLES</div><h2>Explore the<br /><em>possibilities.</em></h2></div><p>These sample profiles demonstrate how founder projects can appear. They are not real businesses or fundraising campaigns.</p></div><div className="demo-project-grid">{filteredDemo.map((project, index) => {
+        const image = safeImageUrl(project.cover_image_url);
+        return <article className="demo-project-card" key={project.id}>
+          <div className={`project-art project-placeholder ${fallbackTones[index % fallbackTones.length]}`} style={image ? { backgroundImage: `linear-gradient(180deg, #17251b22, #17251b66), url("${image}")`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
+            <span className="placeholder-topline"><span className="demo-pill">DEMO PREVIEW</span><span className="placeholder-image-icon">✳</span></span>
+            {!image && <><span className="placeholder-orb placeholder-orb-one" /><span className="placeholder-orb placeholder-orb-two" /><span className="project-art-mark">{initials(project.name)}</span><span className="placeholder-caption">ILLUSTRATIVE COVER</span></>}
+            <span className="project-category">{project.category}</span>
+          </div>
+          <div className="demo-project-body"><div className="project-founder"><span className="founder-avatar">{initials(project.founder_name)}</span><span><b>{project.founder_name}</b><small>{project.location}</small></span><span className="founder-label">SAMPLE</span></div><h2>{project.name}</h2><p>{project.description}</p><div className="project-explore"><span>Illustrative project profile</span><span>DEMO</span></div></div>
+        </article>;
+      })}</div></section>}
+
+      {totalCount === 0 && <div className="empty-state demo-empty"><div className="empty-symbol">✳</div><h2>No matching projects yet.</h2><p>Try a different search or industry. Founders can publish projects to make them discoverable here.</p><Link className="button" href="/signup">Join PeersDeck ↗</Link></div>}
+    </>}
+
     <section className="discover-bottom-cta"><div><div className="eyebrow">YOUR IDEA BELONGS HERE</div><h2>Ready to put your idea<br /><em>in front of the world?</em></h2></div><Link className="button" href="/signup">Create your founder profile <span>↗</span></Link></section>
     <footer className="footer inner-footer"><Link className="brand" href="/"><span className="brand-mark">P</span> peers<span>deck</span></Link><span>© {new Date().getFullYear()} PeersDeck</span></footer>
   </main>;
