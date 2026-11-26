@@ -16,6 +16,7 @@ export default function NewProjectPage() {
   const [country, setCountry] = useState("KE");
   const [location, setLocation] = useState("");
   const [coverImage, setCoverImage] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [stage, setStage] = useState("idea");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -33,6 +34,15 @@ export default function NewProjectPage() {
         const parsed = new URL(imageUrl);
         if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error("Please enter a valid public image URL.");
       }
+      let coverImageUrl = imageUrl || null;
+      if (coverFile) {
+        if (!coverFile.type.startsWith("image/") || coverFile.size > 5 * 1024 * 1024) throw new Error("Choose an image under 5 MB.");
+        const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = user.id + "/project-" + Date.now() + "." + ext;
+        const { error: uploadError } = await supabase.storage.from("profile-media").upload(path, coverFile, { upsert: true, contentType: coverFile.type });
+        if (uploadError) throw uploadError;
+        coverImageUrl = supabase.storage.from("profile-media").getPublicUrl(path).data.publicUrl;
+      }
       const { error } = await supabase.from("projects").insert({
         owner_id: user.id,
         name: name.trim(),
@@ -40,7 +50,7 @@ export default function NewProjectPage() {
         category,
         country_code: country || null,
         location: location.trim(),
-        cover_image_url: imageUrl || null,
+        cover_image_url: coverImageUrl,
         stage,
         status: "draft",
       });
@@ -68,7 +78,7 @@ export default function NewProjectPage() {
           <label>Country code<input maxLength={2} pattern="[A-Za-z]{2}" value={country} onChange={e=>setCountry(e.target.value.toUpperCase())} placeholder="KE" /></label>
         </div>
         <label>City, region or location<input maxLength={120} value={location} onChange={e=>setLocation(e.target.value)} placeholder="e.g. Nairobi, Kenya" /></label>
-        <label>Project cover image URL <span className="field-hint">Optional · use a public HTTPS image link</span><input type="url" value={coverImage} onChange={e=>setCoverImage(e.target.value)} placeholder="https://example.com/project-cover.jpg" /></label>
+        <label>Upload project cover image<input type="file" accept="image/png,image/jpeg,image/webp,image/avif" onChange={e=>setCoverFile(e.target.files?.[0]||null)}/><span className="field-hint">Optional · JPG, PNG, WebP or AVIF · maximum 5 MB</span></label><label>Or use a project cover image URL<input type="url" value={coverImage} onChange={e=>setCoverImage(e.target.value)} placeholder="https://example.com/project-cover.jpg" /></label>
         <label>Current stage<select value={stage} onChange={e=>setStage(e.target.value)}><option value="idea">Idea</option><option value="prototype">Prototype</option><option value="early_revenue">Early revenue</option><option value="growth">Growth</option></select></label>
         {message && <div className="form-message" role="alert">{message}</div>}
         <div className="draft-notice">This saves a private draft. It will not publish your project or create a fundraising campaign.</div>
