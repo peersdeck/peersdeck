@@ -51,7 +51,7 @@ const fallbackTones = ["sage", "sun", "blue", "rose", "violet", "mint"];
 // Local JPEG campaign artwork is the default for the six illustrative projects.
 // Uploaded founder cover_image_url values continue to take precedence.
 const demoImageByName: Record<string, string> = {
-  "farmlink africa": "/images/projects/farmlink.jpg",
+  "farmlink africa": "/images/projects/farm-link.jpg",
   "mwangaza solar": "/images/projects/mwangaza.jpg",
   afyalink: "/images/projects/afyalink.jpg",
   "crafted collective": "/images/projects/crafted.jpg",
