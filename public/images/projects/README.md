@@ -9,4 +9,4 @@ Store the six demo campaign cover images in this directory:
 - `routewise.jpg` — RouteWise (logistics)
 - `skillspring.jpg` — SkillSpring (education)
 
-Use optimized WebP images, ideally 1200 × 800 pixels. Keep filenames stable because project records and UI may reference these paths.
+Use optimized JPEG images, ideally 1200 × 800 pixels (3:2 landscape). Keep filenames stable because project records and UI may reference these paths.
