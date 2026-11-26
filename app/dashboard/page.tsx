@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 type AdminProject = {
  id:string; owner_id:string; name:string; status:string; funding_goal:number|null;
  amount_raised:number; currency:string; funding_deadline:string|null; created_at:string;
- category:string; location:string|null; review_note:string|null;
+ category:string; location:string|null; review_note:string|null; suspended_from_status:string|null;
 };
 
 function money(value:number,currency:string){return new Intl.NumberFormat("en",{style:"currency",currency,maximumFractionDigits:0}).format(value||0);}
@@ -28,14 +28,17 @@ async function reviewProject(formData:FormData){
  "use server";
  const id=String(formData.get("project_id")||"");
  const decision=String(formData.get("decision")||"");
- if(!id||!["published","rejected","suspended"].includes(decision))throw new Error("Invalid review action.");
+ if(!id||!["published","rejected","suspended","restore"].includes(decision))throw new Error("Invalid review action.");
  const {supabase,userId}=await requireAdmin();
- const {error}=await supabase.from("projects").update({
-  status:decision, reviewed_at:new Date().toISOString(), reviewed_by:userId,
-  published_at:decision==="published"?new Date().toISOString():null,
-  review_note:String(formData.get("review_note")||"").trim()||null,
-  updated_at:new Date().toISOString()
- }).eq("id",id);
+ const {data:current,error:readError}=await supabase.from("projects").select("status,suspended_from_status,published_at").eq("id",id).single();
+ if(readError||!current)throw new Error("Project could not be found.");
+ const nextStatus=decision==="restore"?(current.suspended_from_status||"submitted"):decision;
+ const update:any={status:nextStatus,reviewed_at:new Date().toISOString(),reviewed_by:userId,review_note:String(formData.get("review_note")||"").trim()||null,updated_at:new Date().toISOString()};
+ if(decision==="suspended")update.suspended_from_status=current.status;
+ if(decision==="restore")update.suspended_from_status=null;
+ if(decision==="published")update.published_at=new Date().toISOString();
+ if(decision==="rejected")update.published_at=null;
+ const {error}=await supabase.from("projects").update(update).eq("id",id);
  if(error)throw new Error("Project review could not be saved: "+error.message);
  revalidatePath("/dashboard");revalidatePath("/discover");revalidatePath("/projects/"+id);
 }
@@ -93,7 +96,7 @@ export default async function DashboardPage(){
  let statusCounts:Record<string,number>={};
  if(isAdmin){
   const [{data:rows},{data:demoRows}]=await Promise.all([
-   supabase.from("projects").select("id,owner_id,name,status,funding_goal,amount_raised,currency,funding_deadline,created_at,category,location,review_note,is_demo").eq("is_demo",false).order("created_at",{ascending:false}),
+   supabase.from("projects").select("id,owner_id,name,status,funding_goal,amount_raised,currency,funding_deadline,created_at,category,location,review_note,is_demo,suspended_from_status").eq("is_demo",false).order("created_at",{ascending:false}),
    supabase.from("demo_projects").select("id,name,founder_name,location,category,description,is_active").order("display_order")
   ]);
   adminProjects=(rows||[]) as AdminProject[];
@@ -124,7 +127,7 @@ export default async function DashboardPage(){
  <div className="admin-progress"><span style={{width:progress+"%"}}/></div><div className="admin-progress-label">{goal>0?progress.toFixed(1)+"% of target recorded":"Funding target not entered"}{p.funding_deadline?" · Deadline "+p.funding_deadline:" · No deadline"}</div>
  <form className="admin-raised-form" action={saveRaisedAmount}><input type="hidden" name="project_id" value={p.id}/><label>Verified amount raised ({p.currency||"USD"})<input name="amount_raised" type="number" min="0" step="0.01" defaultValue={raised}/></label><button className="button button-small secondary-action" type="submit">Save amount</button></form>
  {p.status==="submitted"&&<form className="admin-review-form" action={reviewProject}><input type="hidden" name="project_id" value={p.id}/><label>Review note (optional)<input name="review_note" placeholder="Feedback for the founder"/></label><div><button className="button button-small publish-action" name="decision" value="published">Approve & publish</button><button className="button button-small admin-delete" name="decision" value="rejected">Reject</button></div></form>}
- {(p.status==="published"||p.status==="suspended")&&<form className="admin-review-form" action={reviewProject}><input type="hidden" name="project_id" value={p.id}/><label>Admin note (optional)<input name="review_note" placeholder="Reason for status change"/></label><button className="button button-small secondary-action" name="decision" value={p.status==="published"?"suspended":"published"}>{p.status==="published"?"Suspend project":"Restore & publish"}</button></form>}
+ <form className="admin-review-form" action={reviewProject}><input type="hidden" name="project_id" value={p.id}/><label>Admin note (optional)<input name="review_note" placeholder="Reason for status change"/></label>{p.status==="suspended"?<button className="button button-small publish-action" name="decision" value="restore">Restore previous status</button>:<button className="button button-small secondary-action" name="decision" value="suspended">Suspend project</button>}</form>
  <form action={deleteProject}><input type="hidden" name="project_id" value={p.id}/><button className="button button-small admin-delete" type="submit">Delete project permanently</button></form>
  <div className="admin-project-links"><Link href={"/projects/"+p.id}>View project ↗</Link><Link href={"/dashboard/projects/"+p.id}>Open editor ↗</Link></div>
  </article>})}</div>}</section>
