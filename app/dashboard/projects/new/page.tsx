@@ -24,6 +24,7 @@ export default function NewProjectPage() {
   const [stage, setStage] = useState("idea");
   const [fundingGoal, setFundingGoal] = useState("");
   const [currency, setCurrency] = useState("USD");
+  const [fundingDeadline, setFundingDeadline] = useState("");
   const [pitchDeck, setPitchDeck] = useState<File | null>(null);
   const [videoPitch, setVideoPitch] = useState<File | null>(null);
   const [registrationDocs, setRegistrationDocs] = useState<File[]>([]);
@@ -75,7 +76,7 @@ export default function NewProjectPage() {
       const { data: project, error } = await supabase.from("projects").insert({
         owner_id: user.id, name: name.trim(), summary: summary.trim(), category,
         country_code: country || null, location: location.trim(), cover_image_url: coverImageUrl,
-        stage, funding_goal: amount, currency, status: "draft",
+        stage, funding_goal: amount, currency, funding_deadline: fundingDeadline || null, status: "draft",
       }).select("id").single();
       if (error || !project) throw error || new Error("Your project draft could not be created.");
       const documents: Array<ReturnType<typeof uploadDocument> extends Promise<infer T> ? T : never> = [];
@@ -97,7 +98,7 @@ export default function NewProjectPage() {
     <section className="project-form-wrap">
       <div className="eyebrow">FOUNDER WORKSPACE / NEW PROJECT</div>
       <h1>Present your project<br /><em>to the world.</em></h1>
-      <p className="project-intro">Complete your project application, state the funding you are seeking and provide supporting materials. Your project appears in Discover after you publish it.</p>
+      <p className="project-intro">Complete your project application, state the funding you are seeking and provide supporting materials. Your project is saved as a draft. Submit it for Super Admin review; it appears in Discover only after approval.</p>
       <form className="project-form" onSubmit={submit}>
         <label>Project or business name<input required minLength={2} maxLength={120} value={name} onChange={e=>setName(e.target.value)} placeholder="What are you building?" /></label>
         <label>Short description<textarea required maxLength={2000} rows={5} value={summary} onChange={e=>setSummary(e.target.value)} placeholder="Describe the problem you want to solve and the idea behind your project." /></label>
@@ -110,6 +111,7 @@ export default function NewProjectPage() {
           <label>Amount you are seeking to raise<input required type="number" min="1" step="0.01" value={fundingGoal} onChange={e=>setFundingGoal(e.target.value)} placeholder="Enter target amount" /></label>
           <label>Currency<select value={currency} onChange={e=>setCurrency(e.target.value)}>{currencies.map(code=><option key={code} value={code}>{code}</option>)}</select></label>
         </div>
+        <label>Funding deadline<input type="date" min={new Date().toISOString().slice(0,10)} value={fundingDeadline} onChange={e=>setFundingDeadline(e.target.value)} /><span className="field-hint">Optional · Used to calculate days remaining in the funding period</span></label>
         <label>Upload project cover image<input type="file" accept="image/png,image/jpeg,image/webp,image/avif" onChange={e=>setCoverFile(e.target.files?.[0]||null)}/><span className="field-hint">Optional · JPG, PNG, WebP or AVIF · maximum 5 MB</span></label>
         <label>Or use a project cover image URL<input type="url" value={coverImage} onChange={e=>setCoverImage(e.target.value)} placeholder="https://example.com/project-cover.jpg" /></label>
         <label>Current stage<select value={stage} onChange={e=>setStage(e.target.value)}><option value="idea">Idea</option><option value="prototype">Prototype</option><option value="early_revenue">Early revenue</option><option value="growth">Growth</option></select></label>
@@ -121,7 +123,7 @@ export default function NewProjectPage() {
           <label>Registration documents<input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={e=>setRegistrationDocs(Array.from(e.target.files||[]))}/><span className="field-hint">{registrationDocs.length ? registrationDocs.map(file=>file.name).join(", ") : "PDF, JPG or PNG · up to 5 files · 10 MB each"}</span></label>
         </div>
         {message && <div className="form-message" role="alert">{message}</div>}
-        <div className="draft-notice">This saves a private draft. Review it in your project studio and publish it when ready. PeersDeck does not process investments or payments.</div>
+        <div className="draft-notice">This saves a private draft. You can submit it for Super Admin review from your project studio. Publication requires approval. PeersDeck does not process investments or payments.</div>
         <button className="button auth-submit" disabled={busy || categories.length===0}>{busy ? "Saving application and files..." : "Save project application"} <span>↗</span></button>
       </form>
     </section>
