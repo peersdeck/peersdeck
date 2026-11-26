@@ -24,6 +24,7 @@ type LiveProject = {
   location: string | null;
   stage: string;
   cover_image_url: string | null;
+  owner_id: string;
   profiles?: { full_name?: string | null; avatar_url?: string | null; headline?: string | null } | null;
 };
 
@@ -60,14 +61,24 @@ export default function DiscoverPage() {
       setLoadError("");
       const [demoResult, liveResult] = await Promise.all([
         supabase.from("demo_projects").select("id,name,founder_name,location,category,description,cover_image_url,currency").eq("is_active", true).order("display_order", { ascending: true }),
-        supabase.from("projects").select("id,name,summary,category,country_code,location,stage,cover_image_url,profiles!projects_owner_id_fkey(full_name,avatar_url,headline)").eq("status", "published").eq("is_demo", false).order("published_at", { ascending: false }),
+        supabase.from("projects").select("id,name,summary,category,country_code,location,stage,cover_image_url,owner_id").eq("status", "published").eq("is_demo", false).order("published_at", { ascending: false }),
       ]);
       if (!mounted) return;
-      if (demoResult.error || liveResult.error) {
+      const ownerIds = Array.from(new Set((liveResult.data || []).map((project) => project.owner_id)));
+      const profileResult = ownerIds.length
+        ? await supabase.from("profiles").select("id,full_name,avatar_url,headline").in("id", ownerIds)
+        : { data: [], error: null };
+      if (!mounted) return;
+      if (demoResult.error || liveResult.error || profileResult.error) {
         setLoadError("Some project information could not be loaded. Please refresh the page.");
       }
+      const profilesById = new Map((profileResult.data || []).map((profile) => [profile.id, profile]));
+      const projectsWithProfiles = (liveResult.data || []).map((project) => ({
+        ...project,
+        profiles: profilesById.get(project.owner_id) || null,
+      }));
       setDemoProjects((demoResult.data || []) as DemoProject[]);
-      setLiveProjects((liveResult.data || []) as unknown as LiveProject[]);
+      setLiveProjects(projectsWithProfiles as unknown as LiveProject[]);
       setLoading(false);
     }
     void loadDirectory();
