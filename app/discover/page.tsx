@@ -24,6 +24,8 @@ type LiveProject = {
   location: string | null;
   stage: string;
   funding_goal: number | null;
+  amount_raised: number;
+  funding_deadline: string | null;
   currency: string;
   cover_image_url: string | null;
   owner_id: string;
