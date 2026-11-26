@@ -23,6 +23,8 @@ type LiveProject = {
   country_code: string | null;
   location: string | null;
   stage: string;
+  funding_goal: number | null;
+  currency: string;
   cover_image_url: string | null;
   owner_id: string;
   profiles?: { full_name?: string | null; avatar_url?: string | null; headline?: string | null } | null;
