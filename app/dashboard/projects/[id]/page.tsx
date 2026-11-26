@@ -47,9 +47,9 @@ export default function EditProjectPage(){
  <label>Business model<textarea rows={3} maxLength={3000} value={form.business_model} onChange={e=>change("business_model",e.target.value)} placeholder="How will the project sustain itself?"/></label>
  <label>Project website<input type="url" value={form.website_url} onChange={e=>change("website_url",e.target.value)} placeholder="https://…"/></label>
  {message&&<div className={message.includes("published")||message.includes("saved")?"form-message success":"form-message"} role="status">{message}</div>}
- {project.status!=="suspended"&&<button className="button auth-submit" disabled={busy}>{busy?"Saving…":"Save changes"} <span>↗</span></button>}
+ {project.status!=="suspended"&&project.status!=="published"&&<button className="button auth-submit" disabled={busy}>{busy?"Saving…":"Save changes"} <span>↗</span></button>}
  {project.status!=="published"&&project.status!=="suspended"&&<button type="button" className="button publish-action" disabled={busy} onClick={()=>persist("submitted")}>{busy?"Submitting…":"Submit for approval"} <span>↗</span></button>}
- {project.status==="suspended"&&<p className="field-hint">This project has been suspended by PeersDeck administration. Contact the platform team if you believe this is an error.</p>}
+ {project.status==="suspended"&&<p className="field-hint">This project has been suspended by PeersDeck administration. Contact the platform team if you believe this is an error.</p>}{project.status==="published"&&<p className="field-hint">This project is approved and published. Contact PeersDeck support if you need changes; only the Super Admin can manage its publication status or deletion.</p>}
  {project.status==="submitted"&&<p className="field-hint">Your project is awaiting Super Admin review. It is not visible in public Discover yet.</p>}
  {project.status==="rejected"&&<p className="field-hint">This project was not approved. Make the requested changes and resubmit it for review.</p>}
  {project.status==="published"&&<p className="field-hint">This project has been approved and is visible in public Discover.</p>}
