@@ -19,11 +19,28 @@ function safeImage(value: string | null) {
 
 export default async function Home() {
   const supabase = await createClient();
-  const [projectsResult, demoResult] = await Promise.all([
+  const [projectsResult, demoResult, analyticsResult] = await Promise.all([
     supabase.from("projects").select("id,name,summary,category,country_code,location,cover_image_url").eq("status", "published").eq("is_demo", false).order("published_at", { ascending: false }).limit(3),
     supabase.from("demo_projects").select("category").eq("is_active", true),
+    supabase.from("projects").select("owner_id,country_code,category,funding_goal,amount_raised,currency").eq("status", "published").eq("is_demo", false),
   ]);
   const featuredProjects = projectsResult.data || [];
+  const liveAnalytics = analyticsResult.data || [];
+  const uniqueFounders = new Set(liveAnalytics.map((project) => project.owner_id).filter(Boolean)).size;
+  const uniqueCountries = new Set(liveAnalytics.map((project) => project.country_code).filter(Boolean)).size;
+  const uniqueIndustries = new Set(liveAnalytics.map((project) => project.category).filter(Boolean)).size;
+  const moneyByCurrency = (field: "funding_goal" | "amount_raised") => {
+    const totals = new Map<string, number>();
+    for (const project of liveAnalytics) {
+      const currency = project.currency || "USD";
+      const amount = Number(project[field] || 0);
+      if (Number.isFinite(amount)) totals.set(currency, (totals.get(currency) || 0) + amount);
+    }
+    return Array.from(totals.entries()).filter(([, amount]) => amount > 0).sort(([a], [b]) => a.localeCompare(b));
+  };
+  const formatTotals = (totals: [string, number][]) => totals.length
+    ? totals.map(([currency, amount]) => `${currency} ${new Intl.NumberFormat("en", { maximumFractionDigits: 0 }).format(amount)}`).join(" · ")
+    : "No published figures yet";
   const categories = Array.from(new Set([
     ...(projectsResult.data || []).map((project) => project.category),
     ...(demoResult.data || []).map((project) => project.category),
@@ -56,6 +73,21 @@ export default async function Home() {
       </section>
 
       <section className="ticker"><div className="shell ticker-inner"><span>IDEAS</span><i>✳</i><span>PEOPLE</span><i>✳</i><span>CAPITAL</span><i>✳</i><span>PROGRESS</span><i>✳</i><span>IMPACT</span></div></section>
+
+      <section className="global-impact shell" aria-labelledby="global-impact-title">
+        <div className="impact-heading"><div><div className="eyebrow">THE PEERSDECK COMMUNITY · GLOBAL OVERVIEW</div><h2 id="global-impact-title">Ideas in motion.<br /><em>Impact taking shape.</em></h2></div><span className="impact-live"><i /> LIVE PLATFORM DATA</span></div>
+        <div className="impact-grid">
+          <article className="impact-card impact-primary"><span>Published projects</span><strong>{analyticsResult.data ? liveAnalytics.length.toLocaleString() : "—"}</strong><small>Founder projects approved and visible in Discover</small></article>
+          <article className="impact-card"><span>Founders represented</span><strong>{analyticsResult.data ? uniqueFounders.toLocaleString() : "—"}</strong><small>Distinct project owners</small></article>
+          <article className="impact-card"><span>Countries represented</span><strong>{analyticsResult.data ? uniqueCountries.toLocaleString() : "—"}</strong><small>Based on project country records</small></article>
+          <article className="impact-card"><span>Industries represented</span><strong>{analyticsResult.data ? uniqueIndustries.toLocaleString() : "—"}</strong><small>Distinct project classifications</small></article>
+        </div>
+        <div className="impact-finance-grid">
+          <div className="impact-finance"><span className="impact-finance-label">Funding sought · published projects</span><strong>{analyticsResult.data ? formatTotals(moneyByCurrency("funding_goal")) : "—"}</strong><small>Targets shown separately by currency; no exchange-rate conversion is assumed.</small></div>
+          <div className="impact-finance"><span className="impact-finance-label">Founder-reported amount raised</span><strong>{analyticsResult.data ? formatTotals(moneyByCurrency("amount_raised")) : "—"}</strong><small>Figures entered by founders; not independently verified payments.</small></div>
+        </div>
+        <p className="impact-footnote">Live totals exclude fictional demonstration projects and unpublished drafts. Project statistics update from published PeersDeck records.</p>
+      </section>
 
       <section className="section shell" id="how-it-works">
         <div className="section-heading"><div><div className="eyebrow">A PLATFORM FOR POSSIBILITY</div><h2>Good ideas need<br /><em>the right people.</em></h2></div><p>PeersDeck brings the pieces together: founders with ambition, people with experience, and supporters looking for the next opportunity.</p></div>
